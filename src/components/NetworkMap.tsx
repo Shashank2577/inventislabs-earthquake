@@ -127,28 +127,99 @@ export const INDIA_OUTLINE: [number, number][] = [
 
 
 /**
- * Kashmir as India claims it. Natural Earth's admin-0 split the region three
- * ways, so the northern extension is restored here as two polygons that are
- * filled with the same landmass colour and drawn without a stroke — the three
- * shapes read as one continuous outline, with no internal boundary line.
+ * Kashmir as India claims it.
  *
- *   KASHMIR_NW — Gilgit-Baltistan + Azad Kashmir, Pakistan-administered
- *   KASHMIR_NE — Aksai Chin, China-administered
+ * Natural Earth's admin-0 India ring excludes most of the disputed region, so
+ * the claimed extent is restored from the 1:10m admin-1 layer — real
+ * boundaries, not hand-traced ones:
  *
- * Coordinates are hand-traced and generalised for display, not survey-grade.
+ *   KASHMIR_AJK               — Pakistan / Azad Kashmir
+ *   KASHMIR_NORTHERN_AREAS    — Pakistan / Northern Areas (Gilgit-Baltistan)
+ *   KASHMIR_SIACHEN           — Siachen Glacier
+ *   KASHMIR_LADAKH_CLAIMED    — India / Ladakh, which NE draws to the LAC
+ *
+ * All four are filled underneath the main outline so the five shapes read as
+ * one landmass. The lines left running through the region are the LoC and the
+ * LAC — real boundaries inside the claimed territory, not artefacts.
+ *
+ * Simplified with Douglas-Peucker at 0.02°.
  */
-const KASHMIR_NW: [number, number][] = [
-  [74.05, 33.0], [74.4, 33.35], [74.22, 33.8], [74.7, 34.3], [75.0, 34.9],
-  [75.6, 35.4], [76.2, 35.9], [76.8, 36.3], [77.2, 35.9], [77.4, 35.3],
-  [78.0, 34.7], [77.6, 34.2], [77.0, 33.7], [76.5, 33.4], [76.0, 32.9],
-  [75.3, 32.7], [74.6, 32.7], [74.2, 32.8],
+export const KASHMIR_AJK: [number, number][] = [
+  [75.2245, 34.6386], [75.0178, 34.6297], [74.2858, 34.7689], [73.9193, 34.6425],
+  [73.926, 34.565], [73.7798, 34.3961], [73.8042, 34.3275], [73.9377, 34.3042],
+  [73.9906, 34.2185], [73.9954, 34.1764], [73.8933, 34.1147], [73.9162, 34.0279],
+  [73.9767, 34.0046], [74.2284, 34.0129], [74.2723, 33.9621], [74.1775, 33.8575],
+  [74.0113, 33.8105], [73.9608, 33.6923], [73.9767, 33.6484], [74.1416, 33.5494],
+  [74.1578, 33.4942], [74.096, 33.3285], [74.0017, 33.2702], [73.9885, 33.2086],
+  [74.1539, 33.0402], [74.3113, 32.9943], [74.3367, 32.8701], [74.317, 32.8231],
+  [73.983, 32.9691], [73.9261, 33.026], [73.8059, 33.0151], [73.6225, 33.1245],
+  [73.6549, 33.1847], [73.5798, 33.2393], [73.6032, 33.333], [73.5738, 33.3874],
+  [73.6276, 33.4521], [73.635, 33.5408], [73.5731, 33.6337], [73.6003, 33.7086],
+  [73.5672, 33.8034], [73.5798, 33.9105], [73.5186, 34.0078], [73.4741, 34.2692],
+  [73.4002, 34.3755], [73.4471, 34.558], [73.5832, 34.5884], [73.6234, 34.564],
+  [73.7087, 34.7633], [74.018, 34.8808], [74.1003, 35.0096], [74.066, 35.0497],
+  [74.0994, 35.0927], [74.3506, 35.0935], [74.4638, 35.1237], [74.5489, 35.0802],
+  [74.6611, 34.9181], [74.7991, 34.8519], [74.9746, 34.813], [75.1614, 34.862],
+  [75.2489, 34.7623], [75.2248, 34.6396],
 ];
 
-const KASHMIR_NE: [number, number][] = [
-  [78.05, 34.7], [78.8, 35.0], [79.4, 35.2], [80.0, 35.4], [80.4, 35.3],
-  [80.3, 34.9], [79.9, 34.5], [79.3, 34.2], [78.7, 33.9], [78.2, 34.0],
-  [77.9, 34.4],
+export const KASHMIR_NORTHERN_AREAS: [number, number][] = [
+  [75.9768, 36.4618], [75.9688, 36.302], [76.0144, 36.2304], [75.9701, 36.2023],
+  [75.9715, 36.155], [75.9014, 36.1136], [75.9223, 36.0317], [76.09, 35.9781],
+  [76.166, 35.8062], [76.4031, 35.831], [76.5555, 35.8979], [76.5708, 35.7513],
+  [76.7774, 35.6461], [77.049, 35.1104], [77.0131, 34.9864], [76.9211, 34.9207],
+  [76.8526, 34.9433], [76.7576, 34.9151], [76.7439, 34.8193], [76.6526, 34.747],
+  [76.5358, 34.7262], [76.4382, 34.7629], [76.155, 34.6617], [76.0234, 34.6772],
+  [75.7771, 34.5038], [75.6116, 34.4984], [75.307, 34.574], [75.2245, 34.6386],
+  [75.2489, 34.7623], [75.1614, 34.862], [74.9746, 34.813], [74.7991, 34.8519],
+  [74.6338, 34.9405], [74.5489, 35.0802], [74.4889, 35.1201], [74.2692, 35.0868],
+  [74.1247, 35.0992], [74.1019, 35.1405], [73.8096, 35.2335], [73.7278, 35.2115],
+  [73.6902, 35.3574], [73.7842, 35.4471], [73.7721, 35.522], [73.4097, 35.5478],
+  [73.3822, 35.5884], [73.3067, 35.6005], [73.1256, 35.7248], [73.1547, 35.8249],
+  [73.0884, 35.8759], [72.8722, 35.8743], [72.7924, 35.8376], [72.5156, 35.904],
+  [72.5891, 36.0161], [72.5291, 36.0975], [72.572, 36.2427], [72.6219, 36.2766],
+  [72.6924, 36.2711], [72.8769, 36.3843], [72.8957, 36.4615], [72.9849, 36.4728],
+  [72.9799, 36.5078], [73.055, 36.5396], [73.0945, 36.6033], [73.0734, 36.6985],
+  [73.1765, 36.7349], [73.2963, 36.7174], [73.416, 36.7521], [73.6786, 36.704],
+  [73.7212, 36.7271], [73.8793, 36.7116], [73.8873, 36.7705], [73.7203, 36.8511],
+  [73.7118, 36.8941], [74.0353, 36.8156], [74.0943, 36.8312], [74.1297, 36.8984],
+  [74.2357, 36.9022], [74.4356, 37.0032], [74.5374, 36.9622], [74.5424, 37.0217],
+  [74.6625, 37.0545], [74.8245, 36.9941], [74.8724, 36.9071], [74.925, 36.9709],
+  [75.1001, 36.9941], [75.3513, 36.9158], [75.3945, 36.8643], [75.4319, 36.7229],
+  [75.4926, 36.7207], [75.5705, 36.7667], [75.7287, 36.7232], [75.8748, 36.6195],
+  [75.9766, 36.4626],
 ];
+
+export const KASHMIR_SIACHEN: [number, number][] = [
+  [77.049, 35.1104], [76.7774, 35.6461], [76.843, 35.6413], [76.915, 35.5832],
+  [77.0582, 35.5801], [77.1413, 35.5254], [77.2811, 35.528], [77.3837, 35.472],
+  [77.6606, 35.4581], [77.8003, 35.4954], [77.4247, 35.3029],
+];
+
+export const KASHMIR_LADAKH_CLAIMED: [number, number][] = [
+  [77.8003, 35.4954], [77.8831, 35.4311], [77.9859, 35.4942], [78.0443, 35.4916],
+  [78.0012, 35.2689], [78.13, 35.0554], [78.1481, 34.9431], [78.296, 34.6247],
+  [78.3794, 34.5787], [78.6646, 34.5264], [78.8017, 34.415], [78.9221, 34.3723],
+  [78.9762, 34.3092], [78.9762, 34.2172], [78.7301, 34.0793], [78.7211, 33.9944],
+  [78.7941, 33.7439], [78.7814, 33.5528], [78.8243, 33.4611], [78.9934, 33.3308],
+  [79.098, 33.2877], [79.4201, 33.2752], [79.4561, 33.2504], [79.3732, 33.1121],
+  [79.3993, 33.0269], [79.3336, 32.9943], [79.4141, 32.9721], [79.6207, 32.7287],
+  [79.4435, 32.5348], [79.4068, 32.5297], [79.3795, 32.5765], [79.3205, 32.5923],
+  [79.2874, 32.5326], [79.1129, 32.4724], [79.0753, 32.3708], [78.9434, 32.3464],
+  [78.7715, 32.4617], [78.7369, 32.5458], [78.751, 32.6128], [78.7133, 32.6375],
+  [78.6302, 32.578], [78.4082, 32.5584], [78.3134, 32.4717], [78.2822, 32.4807],
+  [78.2994, 32.5887], [78.3778, 32.6573], [78.3604, 32.7676], [78.3177, 32.7647],
+  [78.2437, 32.6929], [78.0089, 32.6103], [77.8579, 32.873], [77.7211, 33.0126],
+  [77.3713, 32.867], [77.1358, 32.9267], [76.9401, 33.0343], [76.7398, 33.1974],
+  [76.6466, 33.3521], [76.488, 33.5022], [76.2461, 33.5741], [76.2358, 33.7288],
+  [76.1664, 33.8732], [76.0244, 33.9821], [75.8796, 33.9637], [75.7417, 34.0664],
+  [75.6634, 34.1992], [75.5846, 34.2101], [75.3745, 34.371], [75.3481, 34.5572],
+  [75.6116, 34.4984], [75.7771, 34.5038], [76.0234, 34.6772], [76.155, 34.6617],
+  [76.4382, 34.7629], [76.5358, 34.7262], [76.6526, 34.747], [76.7439, 34.8193],
+  [76.7576, 34.9151], [76.8526, 34.9433], [76.9211, 34.9207], [77.0286, 35.0034],
+  [77.0424, 35.107], [77.4247, 35.3029],
+];
+
 
 const CRIMSON = "var(--sw)";
 
@@ -192,6 +263,9 @@ const CITY_LABEL_OFFSET: Record<string, number> = {
   Leh: -14,
   Kolkata: 22,
   Nagpur: 22,
+  Chennai: 22,
+  Bengaluru: -12,
+  Hyderabad: -12,
 };
 
 type NetworkMapProps = {
@@ -208,6 +282,9 @@ type NetworkMapProps = {
   picked?: { lat: number; lon: number } | null;
   cities?: CityPin[];
   onCity?: (name: string) => void;
+  /** Draws the epicentre→station line so the geometry is readable, not
+      just implied by two enormous circles. */
+  link?: { to: { lat: number; lon: number }; label: string } | null;
   className?: string;
 };
 
@@ -230,11 +307,17 @@ export function NetworkMap({
   picked = null,
   cities = [],
   onCity,
+  link = null,
   className,
 }: NetworkMapProps) {
   const outline = useMemo(() => INDIA_OUTLINE.map(project).join(" "), []);
-  const kashmirNW = useMemo(() => KASHMIR_NW.map(project).join(" "), []);
-  const kashmirNE = useMemo(() => KASHMIR_NE.map(project).join(" "), []);
+  const claimedKashmir = useMemo(
+    () =>
+      [KASHMIR_AJK, KASHMIR_NORTHERN_AREAS, KASHMIR_SIACHEN, KASHMIR_LADAKH_CLAIMED].map((p) =>
+        p.map(project).join(" "),
+      ),
+    [],
+  );
   const arc = useMemo(() => HIMALAYAN_ARC.map(project).join(" "), []);
   const gap = useMemo(() => CENTRAL_GAP.map(project).join(" "), []);
   const front = useMemo(() => NEPAL_FRONT.map(project).join(" "), []);
@@ -265,10 +348,11 @@ export function NetworkMap({
         </filter>
       </defs>
 
-      {/* Claimed Kashmir first, unstroked, so it merges with the outline below. */}
+      {/* Claimed Kashmir first, so the main outline sits on top of it. */}
       <g fill="url(#landmass)">
-        <polygon points={kashmirNW} />
-        <polygon points={kashmirNE} />
+        {claimedKashmir.map((pts, i) => (
+          <polygon key={i} points={pts} />
+        ))}
       </g>
 
       <polygon
@@ -279,21 +363,12 @@ export function NetworkMap({
         strokeLinejoin="round"
       />
 
-      {/* Outer edge of the restored region, stroked on its own. */}
-      <polygon
-        points={kashmirNW}
-        fill="none"
-        stroke="var(--land-line)"
-        strokeWidth="1.6"
-        strokeLinejoin="round"
-      />
-      <polygon
-        points={kashmirNE}
-        fill="none"
-        stroke="var(--land-line)"
-        strokeWidth="1.6"
-        strokeLinejoin="round"
-      />
+      {/* Outline of the restored region, drawn on its own. */}
+      <g fill="none" stroke="var(--land-line)" strokeWidth="1.6" strokeLinejoin="round">
+        {claimedKashmir.map((pts, i) => (
+          <polygon key={i} points={pts} />
+        ))}
+      </g>
 
       {showTectonics && (
         <g>
@@ -387,12 +462,61 @@ export function NetworkMap({
         />
       )}
 
-      {/* Free crosshair for the chosen epicentre. */}
+      {/* The epicentre. A 9-unit dot is invisible inside a 400-unit wavefront,
+          so it gets a proper survey symbol and a name. */}
       {picked && (
         <g>
-          <line x1={px(picked.lon) - 14} y1={py(picked.lat)} x2={px(picked.lon) + 14} y2={py(picked.lat)} stroke={CRIMSON} strokeWidth="1.4" />
-          <line x1={px(picked.lon)} y1={py(picked.lat) - 14} x2={px(picked.lon)} y2={py(picked.lat) + 14} stroke={CRIMSON} strokeWidth="1.4" />
-          <circle cx={px(picked.lon)} cy={py(picked.lat)} r="9" fill="none" stroke={CRIMSON} strokeWidth="1.4" />
+          <line x1={px(picked.lon) - 16} y1={py(picked.lat)} x2={px(picked.lon) + 16} y2={py(picked.lat)} stroke={CRIMSON} strokeWidth="1.6" />
+          <line x1={px(picked.lon)} y1={py(picked.lat) - 16} x2={px(picked.lon)} y2={py(picked.lat) + 16} stroke={CRIMSON} strokeWidth="1.6" />
+          <circle cx={px(picked.lon)} cy={py(picked.lat)} r="11" fill="none" stroke={CRIMSON} strokeWidth="1.4">
+            <animate attributeName="r" values="7;20" dur="2.2s" repeatCount="indefinite" />
+            <animate attributeName="opacity" values="0.85;0" dur="2.2s" repeatCount="indefinite" />
+          </circle>
+          <text
+            x={px(picked.lon) + 20}
+            y={py(picked.lat) - 14}
+            fontSize="15"
+            fill={CRIMSON}
+            fontFamily="var(--font-mono)"
+            stroke="var(--bg)"
+            strokeWidth="3.5"
+            paintOrder="stroke"
+            style={{ letterSpacing: "0.08em" }}
+          >
+            EPICENTRE
+          </text>
+        </g>
+      )}
+
+      {/* Epicentre → station. Without this the wavefronts read as two arcs
+          floating over the map with no visible centre or subject. */}
+      {picked && link && (
+        <g>
+          <line
+            x1={px(picked.lon)}
+            y1={py(picked.lat)}
+            x2={px(link.to.lon)}
+            y2={py(link.to.lat)}
+            stroke={CRIMSON}
+            strokeWidth="1.6"
+            strokeDasharray="7 6"
+            opacity="0.85"
+          >
+            <animate attributeName="stroke-dashoffset" from="0" to="-26" dur="1.1s" repeatCount="indefinite" />
+          </line>
+          <text
+            x={(px(picked.lon) + px(link.to.lon)) / 2}
+            y={(py(picked.lat) + py(link.to.lat)) / 2 - 8}
+            textAnchor="middle"
+            fontSize="15"
+            fill={CRIMSON}
+            fontFamily="var(--font-mono)"
+            stroke="var(--bg)"
+            strokeWidth="3.5"
+            paintOrder="stroke"
+          >
+            {link.label}
+          </text>
         </g>
       )}
 

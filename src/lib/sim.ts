@@ -30,9 +30,12 @@ export type Station = {
 export function useQuakeSim(
   source: QuakeSource,
   station: Station,
-  options: { tailSeconds?: number; onComplete?: () => void } = {},
+  options: { tailSeconds?: number; rate?: number; onComplete?: () => void } = {},
 ) {
   const { tailSeconds = 9 } = options;
+  /* Playback speed. 1 is the honest rate; anything else is a deliberate
+     choice to watch in slow motion, never to make a number look better. */
+  const rate = options.rate ?? 1;
 
   const distanceKm = useMemo(
     () => haversineKm(source, station),
@@ -47,6 +50,11 @@ export function useQuakeSim(
   const [elapsed, setElapsed] = useState(0);
 
   const elapsedRef = useRef(0);
+  /* Event time at the moment the clock started. The loop derives from this
+     rather than adding a frame delta to a running total — accumulating
+     (now - start) once per frame compounds quadratically and the event races
+     to its end in a fraction of a second. */
+  const baseRef = useRef(0);
   const startRef = useRef(0);
   const endAt = sAt + tailSeconds;
 
@@ -56,6 +64,7 @@ export function useQuakeSim(
   useEffect(() => {
     if (sigRef.current === signature) return;
     sigRef.current = signature;
+    baseRef.current = 0;
     elapsedRef.current = 0;
     setElapsed(0);
     setPhase("idle");
@@ -68,7 +77,7 @@ export function useQuakeSim(
 
     const loop = () => {
       const e =
-        elapsedRef.current + (performance.now() - startRef.current) / 1000;
+        baseRef.current + ((performance.now() - startRef.current) / 1000) * rate;
       elapsedRef.current = e;
       const now = performance.now();
       // React state moves at 20 Hz; the trace canvas reads refs at frame rate.
@@ -87,12 +96,14 @@ export function useQuakeSim(
 
     raf = requestAnimationFrame(loop);
     return () => cancelAnimationFrame(raf);
-  }, [phase, endAt]);
+  }, [phase, endAt, rate]);
 
   const run = useCallback(() => {
-    elapsedRef.current = Math.max(0, pAt - 2);
+    const from = Math.max(0, pAt - 2);
+    baseRef.current = from;
+    elapsedRef.current = from;
     startRef.current = performance.now();
-    setElapsed(elapsedRef.current);
+    setElapsed(from);
     setPhase("running");
   }, [pAt]);
 
@@ -103,10 +114,11 @@ export function useQuakeSim(
    */
   const runFrom = useCallback(
     (t: number) => {
-      const from = Math.max(0, t);
-      elapsedRef.current = from;
+      const start = Math.max(0, t);
+      baseRef.current = start;
+      elapsedRef.current = start;
       startRef.current = performance.now();
-      setElapsed(from);
+      setElapsed(start);
       setPhase("running");
     },
     [],
@@ -118,6 +130,7 @@ export function useQuakeSim(
   }, []);
 
   const reset = useCallback(() => {
+    baseRef.current = 0;
     elapsedRef.current = 0;
     setElapsed(0);
     setPhase("idle");
@@ -126,6 +139,7 @@ export function useQuakeSim(
   /** Direct time travel — lets you jump straight to the interesting second. */
   const seek = useCallback((t: number) => {
     const clamped = Math.max(0, Math.min(t, endAt));
+    baseRef.current = clamped;
     elapsedRef.current = clamped;
     setElapsed(clamped);
     setPhase("paused");
@@ -155,6 +169,7 @@ export function useQuakeSim(
     warned,
     impacted,
     countdown,
+    rate,
     distanceKm,
     pAt,
     sAt,

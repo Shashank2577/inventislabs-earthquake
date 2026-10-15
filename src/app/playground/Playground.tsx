@@ -21,7 +21,9 @@ export default function Playground() {
   const sim = useQuakeSim(
     { lat: source.lat, lon: source.lon, magnitude, depthKm },
     { name: city.name, lat: city.lat, lon: city.lon },
-    { tailSeconds: 8 },
+    /* Half speed. The warning time is the whole point of the page, and at 1x
+       the countdown is over before you can read it. */
+    { tailSeconds: 8, rate: 0.5 },
   );
 
   const cities = useMemo(
@@ -72,6 +74,10 @@ export default function Playground() {
               interactive
               onPick={setSource}
               picked={source}
+              link={{
+                to: { lat: city.lat, lon: city.lon },
+                label: `${sim.distanceKm.toFixed(0)} km to ${city.name}`,
+              }}
               cities={cities}
               onCity={(n) => setCityName(n)}
               origin={
@@ -215,7 +221,8 @@ export default function Playground() {
           <div className="flex items-center gap-4">
             {sim.warning > 60 && sim.phase !== "running" && (
               <span className="font-mono text-[11px] text-ink-3">
-                {formatDuration(sim.sAt)} at 1× — use skip to impact
+                {formatDuration(sim.sAt / sim.rate)} of real time to impact at{" "}
+                {sim.rate}× — skip if that is too long
               </span>
             )}
             <span className="tnum font-mono text-[12px] text-ink-2">
@@ -289,31 +296,55 @@ export default function Playground() {
 
 /* ------------------------------------------------------------------ */
 
+/**
+ * The track is painted in HTML rather than left as a bare line, because the
+ * two vertical ticks are P and S arriving and the shaded band between them IS
+ * the warning. That is the entire argument of the page, so it should not need
+ * a legend to be understood.
+ */
 function Timeline({ sim }: { sim: ReturnType<typeof useQuakeSim> }) {
-  const pct = (t: number) => (t / sim.endAt) * 100;
+  const pct = (t: number) => Math.max(0, Math.min(100, (t / sim.endAt) * 100));
+  const p = pct(sim.pAt);
+  const w = pct(sim.sAt);
+
   return (
-    <div className="relative h-6">
-      <div className="absolute inset-x-0 top-1/2 h-1 -translate-y-1/2 rounded-full bg-surface-2" />
-      {/* P and S markers sit on the track itself, so the relationship
-          between the arrivals is visible before you press run. */}
-      <span
-        className="absolute top-1/2 h-3 w-px -translate-y-1/2"
-        style={{ left: `${pct(sim.pAt)}%`, background: "var(--pw)" }}
-      />
-      <span
-        className="absolute top-1/2 h-3 w-px -translate-y-1/2"
-        style={{ left: `${pct(sim.sAt)}%`, background: "var(--sw)" }}
-      />
-      <input
-        type="range"
-        className="scrub absolute inset-x-0 top-1/2 h-6 w-full -translate-y-1/2"
-        min={0}
-        max={sim.endAt}
-        step={0.1}
-        value={Math.min(sim.elapsed, sim.endAt)}
-        onChange={(e) => sim.seek(Number(e.target.value))}
-        aria-label="Event time in seconds"
-      />
+    <div>
+      <div className="relative h-6">
+        <div className="absolute inset-x-0 top-1/2 h-1.5 -translate-y-1/2 rounded-full bg-surface-2" />
+        <div
+          className="absolute top-1/2 h-1.5 -translate-y-1/2 rounded-full"
+          style={{ left: `${p}%`, width: `${Math.max(w - p, 0.4)}%`, background: "var(--pw)", opacity: 0.5 }}
+        />
+        <div
+          className="absolute top-1/2 h-1.5 -translate-y-1/2 rounded-full"
+          style={{ left: `${w}%`, right: 0, background: "var(--sw)", opacity: 0.4 }}
+        />
+        <span className="absolute top-1/2 h-4 w-px -translate-y-1/2" style={{ left: `${p}%`, background: "var(--pw)" }} />
+        <span className="absolute top-1/2 h-4 w-px -translate-y-1/2" style={{ left: `${w}%`, background: "var(--sw)" }} />
+
+        <input
+          type="range"
+          className="scrub absolute inset-x-0 top-1/2 h-6 w-full -translate-y-1/2"
+          min={0}
+          max={sim.endAt}
+          step={0.1}
+          value={Math.min(sim.elapsed, sim.endAt)}
+          onChange={(e) => sim.seek(Number(e.target.value))}
+          aria-label="Event time in seconds"
+        />
+      </div>
+
+      <div className="relative mt-2 h-4 font-mono text-[10px] tracking-[0.06em]">
+        <span className="absolute -translate-x-1/2 whitespace-nowrap" style={{ left: `${p}%`, color: "var(--pw)" }}>
+          P {sim.pAt.toFixed(1)}s
+        </span>
+        <span className="absolute whitespace-nowrap" style={{ left: `calc(${w}% + 6px)`, color: "var(--sw)" }}>
+          S {sim.sAt.toFixed(1)}s
+        </span>
+        <span className="absolute -translate-x-1/2 whitespace-nowrap text-ink-3" style={{ left: `${(p + w) / 2}%` }}>
+          {sim.warning.toFixed(1)}s of warning
+        </span>
+      </div>
     </div>
   );
 }
