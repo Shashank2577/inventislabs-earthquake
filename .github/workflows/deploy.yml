@@ -28,11 +28,14 @@ jobs:
 
       - run: npm ci
 
+      # Hardcoded rather than read from repo variables: the variables API is not
+      # reachable for this owner, and an empty value here means every asset URL
+      # loses its /inventislabs-earthquake prefix and 404s on Pages.
       - name: Build static export
         run: npm run build
         env:
-          NEXT_PUBLIC_BASE_PATH: ${{ vars.BASE_PATH }}
-          NEXT_PUBLIC_SITE_URL: ${{ vars.SITE_URL }}
+          NEXT_PUBLIC_BASE_PATH: /inventislabs-earthquake
+          NEXT_PUBLIC_SITE_URL: https://shashank2577.github.io/inventislabs-earthquake
 
       - uses: actions/configure-pages@v5
         id: pages
