@@ -55,11 +55,15 @@ function pointInPolygon(p: [number, number], poly: [number, number][]) {
  * the opposite of what the map is for. Every one of those seams is a shared
  * edge, so it is dropped and the outer edge is drawn instead.
  *
- * `tolerance` is in viewBox units (~0.05° of longitude at this scale).
+ * `tolerance` is in viewBox units. It has to exceed the worst disagreement
+ * between two outlines of the same physical boundary: Natural Earth's
+ * Aksai-Chin LAC and its Ladakh LAC differ by up to ~0.09° of longitude
+ * (~2.9 units) after simplification, and a tolerance under that leaves the
+ * LAC stroked as a stray line running away south-east of Leh.
  */
 function outerEdgeRuns(
   polys: [number, number][][],
-  tolerance = 2.5,
+  tolerance = 5,
 ): [number, number][][] {
   const runs: [number, number][][] = [];
 
