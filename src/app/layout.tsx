@@ -40,7 +40,7 @@ export const metadata: Metadata = {
   // "Invalid URL" during static export, which is what CI hits when a repo
   // variable has not been created yet.
   metadataBase: new URL(
-    process.env.NEXT_PUBLIC_SITE_URL || "https://inventislabs.github.io/inventislabs-web",
+    process.env.NEXT_PUBLIC_SITE_URL || "https://shashank2577.github.io/inventislabs-earthquake",
   ),
   title: {
     default: "Inventis Labs — earthquake early warning, built in Roorkee",
@@ -56,7 +56,9 @@ export const metadata: Metadata = {
     images: ["/og.svg"],
     url: "/",
   },
-  icons: { icon: "/icon.svg" },
+  /* Next does not apply `basePath` to metadata icons, so on GitHub Pages this
+     resolves to /icon.svg at the domain root and 404s. Prefix it by hand. */
+  icons: { icon: `${process.env.NEXT_PUBLIC_BASE_PATH || ""}/icon.svg` },
   robots: { index: true, follow: true },
 };
 
