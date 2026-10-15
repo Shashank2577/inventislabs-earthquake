@@ -27,8 +27,11 @@ const mono = IBM_Plex_Mono({
 });
 
 export const metadata: Metadata = {
+  // `||` not `??` — an empty-string env var still reaches `new URL` and throws
+  // "Invalid URL" during static export, which is what CI hits when a repo
+  // variable has not been created yet.
   metadataBase: new URL(
-    process.env.NEXT_PUBLIC_SITE_URL ?? "https://inventislabs.github.io",
+    process.env.NEXT_PUBLIC_SITE_URL || "https://inventislabs.github.io/inventislabs-web",
   ),
   title: {
     default: "Inventis Labs — earthquake early warning, built in Roorkee",
