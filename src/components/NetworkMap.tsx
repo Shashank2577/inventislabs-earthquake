@@ -18,8 +18,102 @@ const LAT1 = 38.2;
 
 const px = (lon: number) => ((lon - LON0) / (LON1 - LON0)) * 1000;
 const py = (lat: number) => ((LAT1 - lat) / (LAT1 - LAT0)) * 1000;
-const project = ([lon, lat]: [number, number]) =>
-  `${px(lon).toFixed(1)},${py(lat).toFixed(1)}`;
+
+/** Nearest point on a segment — used to decide whether two outlines touch. */
+function distToSegment(
+  p: [number, number],
+  a: [number, number],
+  b: [number, number],
+) {
+  const dx = b[0] - a[0];
+  const dy = b[1] - a[1];
+  const len2 = dx * dx + dy * dy;
+  if (len2 === 0) return Math.hypot(p[0] - a[0], p[1] - a[1]);
+  let t = ((p[0] - a[0]) * dx + (p[1] - a[1]) * dy) / len2;
+  t = Math.max(0, Math.min(1, t));
+  return Math.hypot(p[0] - (a[0] + t * dx), p[1] - (a[1] + t * dy));
+}
+
+function pointInPolygon(p: [number, number], poly: [number, number][]) {
+  let inside = false;
+  for (let i = 0, j = poly.length - 1; i < poly.length; j = i++) {
+    const [xi, yi] = poly[i];
+    const [xj, yj] = poly[j];
+    if (yi > p[1] !== yj > p[1] && p[0] < ((xj - xi) * (p[1] - yi)) / (yj - yi) + xi) {
+      inside = !inside;
+    }
+  }
+  return inside;
+}
+
+/**
+ * Strokes only the boundary of the union, never the seams between the
+ * claimed-Kashmir polygons and the main outline.
+ *
+ * Without this the LoC and LAC are drawn across the region, which is
+ * cartographically honest but reads as "Aksai Chin is a separate country" —
+ * the opposite of what the map is for. Every one of those seams is a shared
+ * edge, so it is dropped and the outer edge is drawn instead.
+ *
+ * `tolerance` is in viewBox units (~0.05° of longitude at this scale).
+ */
+function outerEdgeRuns(
+  polys: [number, number][][],
+  tolerance = 2.5,
+): [number, number][][] {
+  const runs: [number, number][][] = [];
+
+  polys.forEach((poly, pi) => {
+    const n = poly.length;
+    const exposed: boolean[] = [];
+    for (let i = 0; i < n; i++) {
+      const a = poly[i];
+      const b = poly[(i + 1) % n];
+      const mid: [number, number] = [(a[0] + b[0]) / 2, (a[1] + b[1]) / 2];
+
+      let shared = false;
+      for (let o = 0; o < polys.length && !shared; o++) {
+        if (o === pi) continue;
+        const other = polys[o];
+        if (pointInPolygon(mid, other)) {
+          shared = true;
+          break;
+        }
+        // Nearly-coincident boundaries: RDP moves the two outlines by a
+        // fraction of a unit, so test proximity to every other edge too.
+        for (let k = 0; k < other.length; k++) {
+          if (distToSegment(mid, other[k], other[(k + 1) % other.length]) < tolerance) {
+            shared = true;
+            break;
+          }
+        }
+      }
+      exposed.push(!shared);
+    }
+
+    let run: [number, number][] = [];
+    for (let i = 0; i <= n; i++) {
+      const k = i % n;
+      if (exposed[k]) {
+        if (run.length === 0) run.push(poly[k]);
+        run.push(poly[(k + 1) % n]);
+      } else if (run.length > 1) {
+        runs.push(run);
+        run = [];
+      } else {
+        run = [];
+      }
+    }
+    if (run.length > 1) runs.push(run);
+  });
+
+  return runs;
+}
+
+const project = ([lon, lat]: [number, number]): [number, number] => [
+  px(lon),
+  py(lat),
+];
 
 /* India outline: Natural Earth 1:50m admin-0, simplified with
    Douglas-Peucker at 0.1°. Real geometry, aggressively generalised. */
@@ -136,7 +230,10 @@ export const INDIA_OUTLINE: [number, number][] = [
  *   KASHMIR_AJK               — Pakistan / Azad Kashmir
  *   KASHMIR_NORTHERN_AREAS    — Pakistan / Northern Areas (Gilgit-Baltistan)
  *   KASHMIR_SIACHEN           — Siachen Glacier
- *   KASHMIR_LADAKH_CLAIMED    — India / Ladakh, which NE draws to the LAC
+ *   KASHMIR_AKSAI_CHIN        — China-administered Aksai Chin, traced off the
+ *                                Xinjiang boundary. Natural Earth's India /
+ *                                Ladakh stops at the LAC and so does *not*
+ *                                contain it; this is the piece India claims.
  *
  * All four are filled underneath the main outline so the five shapes read as
  * one landmass. The lines left running through the region are the LoC and the
@@ -196,30 +293,23 @@ export const KASHMIR_SIACHEN: [number, number][] = [
   [77.6606, 35.4581], [77.8003, 35.4954], [77.4247, 35.3029],
 ];
 
-export const KASHMIR_LADAKH_CLAIMED: [number, number][] = [
-  [77.8003, 35.4954], [77.8831, 35.4311], [77.9859, 35.4942], [78.0443, 35.4916],
-  [78.0012, 35.2689], [78.13, 35.0554], [78.1481, 34.9431], [78.296, 34.6247],
-  [78.3794, 34.5787], [78.6646, 34.5264], [78.8017, 34.415], [78.9221, 34.3723],
-  [78.9762, 34.3092], [78.9762, 34.2172], [78.7301, 34.0793], [78.7211, 33.9944],
-  [78.7941, 33.7439], [78.7814, 33.5528], [78.8243, 33.4611], [78.9934, 33.3308],
-  [79.098, 33.2877], [79.4201, 33.2752], [79.4561, 33.2504], [79.3732, 33.1121],
-  [79.3993, 33.0269], [79.3336, 32.9943], [79.4141, 32.9721], [79.6207, 32.7287],
-  [79.4435, 32.5348], [79.4068, 32.5297], [79.3795, 32.5765], [79.3205, 32.5923],
-  [79.2874, 32.5326], [79.1129, 32.4724], [79.0753, 32.3708], [78.9434, 32.3464],
-  [78.7715, 32.4617], [78.7369, 32.5458], [78.751, 32.6128], [78.7133, 32.6375],
-  [78.6302, 32.578], [78.4082, 32.5584], [78.3134, 32.4717], [78.2822, 32.4807],
-  [78.2994, 32.5887], [78.3778, 32.6573], [78.3604, 32.7676], [78.3177, 32.7647],
-  [78.2437, 32.6929], [78.0089, 32.6103], [77.8579, 32.873], [77.7211, 33.0126],
-  [77.3713, 32.867], [77.1358, 32.9267], [76.9401, 33.0343], [76.7398, 33.1974],
-  [76.6466, 33.3521], [76.488, 33.5022], [76.2461, 33.5741], [76.2358, 33.7288],
-  [76.1664, 33.8732], [76.0244, 33.9821], [75.8796, 33.9637], [75.7417, 34.0664],
-  [75.6634, 34.1992], [75.5846, 34.2101], [75.3745, 34.371], [75.3481, 34.5572],
-  [75.6116, 34.4984], [75.7771, 34.5038], [76.0234, 34.6772], [76.155, 34.6617],
-  [76.4382, 34.7629], [76.5358, 34.7262], [76.6526, 34.747], [76.7439, 34.8193],
-  [76.7576, 34.9151], [76.8526, 34.9433], [76.9211, 34.9207], [77.0286, 35.0034],
-  [77.0424, 35.107], [77.4247, 35.3029],
+
+
+export const KASHMIR_AKSAI_CHIN: [number, number][] = [
+  [80.2742, 35.5276], [80.2595, 35.4173], [80.1762, 35.2532], [80.0142, 35.0859],
+  [80.0379, 34.99], [79.8838, 34.9196], [79.96, 34.6974], [79.794, 34.431],
+  [79.7279, 34.4112], [79.4811, 34.4712], [79.3384, 34.4308], [79.2045, 34.4394],
+  [78.9569, 34.34], [78.8017, 34.415], [78.6646, 34.5264], [78.3794, 34.5787],
+  [78.296, 34.6247], [78.1481, 34.9431], [78.13, 35.0554], [78.0012, 35.2689],
+  [78.0443, 35.4916], [77.9859, 35.4942], [77.9127, 35.441],
 ];
 
+const CLAIMED = [
+  KASHMIR_AJK,
+  KASHMIR_NORTHERN_AREAS,
+  KASHMIR_SIACHEN,
+  KASHMIR_AKSAI_CHIN,
+] as const;
 
 const CRIMSON = "var(--sw)";
 
@@ -311,11 +401,18 @@ export function NetworkMap({
   className,
 }: NetworkMapProps) {
   const outline = useMemo(() => INDIA_OUTLINE.map(project).join(" "), []);
+  const outlineXY = useMemo(() => INDIA_OUTLINE.map(project), []);
+
+  const unionOutline = useMemo(
+    () =>
+      outerEdgeRuns([outlineXY, ...CLAIMED.map((c) => c.map(project))]).map((r) =>
+        r.map(([x, y]) => `${x.toFixed(1)},${y.toFixed(1)}`).join(" "),
+      ),
+    [],
+  );
   const claimedKashmir = useMemo(
     () =>
-      [KASHMIR_AJK, KASHMIR_NORTHERN_AREAS, KASHMIR_SIACHEN, KASHMIR_LADAKH_CLAIMED].map((p) =>
-        p.map(project).join(" "),
-      ),
+      CLAIMED.map((p) => p.map(project).join(" ")),
     [],
   );
   const arc = useMemo(() => HIMALAYAN_ARC.map(project).join(" "), []);
@@ -335,10 +432,6 @@ export function NetworkMap({
       aria-label="Map of India, with Kashmir shown as claimed, and the Inventis Labs seismic sensor network along the Himalayan belt"
     >
       <defs>
-        <linearGradient id="landmass" x1="0.1" y1="0" x2="0.9" y2="1">
-          <stop offset="0%" stopColor="var(--land-hi)" />
-          <stop offset="100%" stopColor="var(--land-lo)" />
-        </linearGradient>
         <filter id="soft-glow" x="-60%" y="-60%" width="220%" height="220%">
           <feGaussianBlur stdDeviation="7" result="b" />
           <feMerge>
@@ -348,25 +441,26 @@ export function NetworkMap({
         </filter>
       </defs>
 
-      {/* Claimed Kashmir first, so the main outline sits on top of it. */}
-      <g fill="url(#landmass)">
+      {/* Solid fill, stroked in the same colour to fatten each polygon just
+          enough that abutting shapes leave no hairline background seam.
+          A per-polygon gradient reads fine on one shape and bands badly
+          where five of them meet. */}
+      <g
+        fill="var(--land-lo)"
+        stroke="var(--land-lo)"
+        strokeWidth="5"
+        strokeLinejoin="round"
+      >
+        <polygon points={outline} />
         {claimedKashmir.map((pts, i) => (
           <polygon key={i} points={pts} />
         ))}
       </g>
 
-      <polygon
-        points={outline}
-        fill="url(#landmass)"
-        stroke="var(--land-line)"
-        strokeWidth="1.6"
-        strokeLinejoin="round"
-      />
-
-      {/* Outline of the restored region, drawn on its own. */}
+      {/* One stroke around the union of all five shapes — no internal seams. */}
       <g fill="none" stroke="var(--land-line)" strokeWidth="1.6" strokeLinejoin="round">
-        {claimedKashmir.map((pts, i) => (
-          <polygon key={i} points={pts} />
+        {unionOutline.map((pts, i) => (
+          <polyline key={i} points={pts} />
         ))}
       </g>
 
@@ -507,7 +601,7 @@ export function NetworkMap({
           </line>
           <text
             x={(px(picked.lon) + px(link.to.lon)) / 2}
-            y={(py(picked.lat) + py(link.to.lat)) / 2 - 8}
+            y={(py(picked.lat) + py(link.to.lat)) / 2 + 26}
             textAnchor="middle"
             className="hidden sm:inline"
             fontSize="15"

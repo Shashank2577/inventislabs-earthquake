@@ -15,15 +15,14 @@ export default function Playground() {
   const [cityName, setCityName] = useState<string>("Dehradun");
   const [magnitude, setMagnitude] = useState(6.5);
   const [depthKm, setDepthKm] = useState(12);
+  const [rate, setRate] = useState(100);
 
   const city = CITIES.find((c) => c.name === cityName)!;
 
   const sim = useQuakeSim(
     { lat: source.lat, lon: source.lon, magnitude, depthKm },
     { name: city.name, lat: city.lat, lon: city.lon },
-    /* Half speed. The warning time is the whole point of the page, and at 1x
-       the countdown is over before you can read it. */
-    { tailSeconds: 8, rate: 0.5 },
+    { tailSeconds: 8, rate: rate / 100 },
   );
 
   const cities = useMemo(
@@ -76,10 +75,16 @@ export default function Playground() {
               interactive
               onPick={setSource}
               picked={source}
-              link={{
-                to: { lat: city.lat, lon: city.lon },
-                label: `${sim.distanceKm.toFixed(0)} km to ${city.name}`,
-              }}
+              /* Under ~30 km the epicentre marker and the city marker sit on
+                 top of each other and three labels stack into mush. */
+              link={
+                sim.distanceKm > 30
+                  ? {
+                      to: { lat: city.lat, lon: city.lon },
+                      label: `${sim.distanceKm.toFixed(0)} km to ${city.name}`,
+                    }
+                  : null
+              }
               cities={cities}
               onCity={(n) => setCityName(n)}
               origin={
@@ -219,6 +224,25 @@ export default function Playground() {
               Skip to impact
             </button>
             <button onClick={sim.reset} className="inline-flex btn btn-ghost">Reset</button>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <span className="label">Speed</span>
+            <div className="flex rounded border border-line bg-bg p-0.5">
+              {[50, 100, 200, 400].map((r) => (
+                <button
+                  key={r}
+                  onClick={() => setRate(r)}
+                  className="min-h-9 rounded px-2.5 py-2 font-mono text-[10px] font-medium transition-colors"
+                  style={{
+                    backgroundColor: rate === r ? "var(--accent)" : "transparent",
+                    color: rate === r ? "var(--on-accent)" : "var(--ink-3)",
+                  }}
+                >
+                  {r / 100}×
+                </button>
+              ))}
+            </div>
           </div>
 
           <div className="min-w-[240px] flex-1">
