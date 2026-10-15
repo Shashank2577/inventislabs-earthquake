@@ -99,7 +99,10 @@ export function useQuakeSim(
   }, [phase, endAt, rate]);
 
   const run = useCallback(() => {
-    const from = Math.max(0, pAt - 2);
+    /* Start at T+0, not just before the P arrival. The detection phase is
+       part of the event — you should watch the network sit quiet before
+       anything happens, not turn up after it already has. */
+    const from = 0;
     baseRef.current = from;
     elapsedRef.current = from;
     startRef.current = performance.now();
@@ -123,6 +126,16 @@ export function useQuakeSim(
     },
     [],
   );
+
+  /** Starts just before the P arrival, for when the pre-P wait is long. */
+  const runFromP = useCallback(() => {
+    const from = Math.max(0, pAt - 2);
+    baseRef.current = from;
+    elapsedRef.current = from;
+    startRef.current = performance.now();
+    setElapsed(from);
+    setPhase("running");
+  }, [pAt]);
 
   const pause = useCallback(() => {
     setElapsed(elapsedRef.current);
@@ -178,6 +191,7 @@ export function useQuakeSim(
     ladder,
     endAt,
     run,
+    runFromP,
     runFrom,
     pause,
     reset,

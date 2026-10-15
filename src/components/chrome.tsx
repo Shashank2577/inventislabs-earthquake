@@ -21,19 +21,19 @@ export function SiteHeader() {
         Skip to content
       </a>
       <header className="sticky top-0 z-50 border-b border-line bg-bg/85 backdrop-blur-md">
-        <div className="mx-auto flex h-16 max-w-[1440px] items-center justify-between gap-3 px-5 md:gap-5 md:px-8">
-          <Link href="/" className="group flex shrink-0 items-center gap-2.5">
+        <div className="mx-auto flex h-16 max-w-[1440px] items-center justify-between gap-2 px-4 md:gap-5 md:px-8">
+          <Link href="/" className="group -ml-1 flex min-h-9 shrink-0 items-center gap-2.5 pl-1">
             <SeismicGlyph />
             {/* Wordmark drops to the glyph alone on the narrowest screens —
                 three nav links plus a theme switch will not fit otherwise. */}
-            <span className="hidden text-[15px] font-medium tracking-[-0.01em] xs:inline sm:inline">
+            <span className="hidden text-[15px] font-medium tracking-[-0.01em] sm:inline">
               Inventis&nbsp;Labs
             </span>
             <span className="sr-only sm:hidden">Inventis Labs</span>
           </Link>
 
-          <div className="flex shrink-0 items-center gap-2 sm:gap-3 md:gap-5">
-            <nav aria-label="Primary" className="flex items-center gap-1">
+          <div className="flex shrink-0 items-center gap-1 sm:gap-3 md:gap-5">
+            <nav aria-label="Primary" className="flex items-center">
               {NAV.map((n) => {
                 const active = pathname === n.href;
                 return (
@@ -41,7 +41,7 @@ export function SiteHeader() {
                     key={n.href}
                     href={n.href}
                     aria-current={active ? "page" : undefined}
-                    className="relative rounded px-2.5 py-1.5 font-mono text-[10px] font-medium uppercase tracking-[0.08em] transition-colors sm:text-[11px] md:px-3"
+                    className="relative -my-2 flex items-center rounded px-2 py-2.5 font-mono text-[10px] font-medium uppercase tracking-[0.06em] transition-colors sm:px-3 sm:text-[11px] sm:tracking-[0.08em] md:px-3"
                     style={{ color: active ? "var(--ink)" : "var(--ink-3)" }}
                   >
                     <span className="sm:hidden">{n.short}</span>
@@ -49,7 +49,7 @@ export function SiteHeader() {
                     {active && (
                       <span
                         aria-hidden
-                        className="absolute inset-x-2.5 -bottom-[1px] h-px md:inset-x-3"
+                        className="absolute inset-x-2 bottom-0 h-px sm:inset-x-3"
                         style={{ background: "var(--accent)" }}
                       />
                     )}
@@ -102,7 +102,7 @@ function ThemeToggle() {
           type="button"
           onClick={() => apply(t)}
           aria-pressed={theme === t}
-          className="rounded-[2px] px-2 py-1 font-mono text-[10px] font-medium uppercase tracking-[0.08em] transition-colors"
+          className="min-h-9 rounded-[2px] px-2.5 py-2 font-mono text-[10px] font-medium uppercase tracking-[0.06em] transition-colors sm:tracking-[0.08em]"
           style={{
             backgroundColor: theme === t ? "var(--accent)" : "transparent",
             color: theme === t ? "var(--on-accent)" : "var(--ink-3)",

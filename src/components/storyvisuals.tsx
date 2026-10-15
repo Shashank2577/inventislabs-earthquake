@@ -370,7 +370,7 @@ export function LedGrid() {
   return (
     <div>
       <div
-        className="grid grid-cols-16 gap-1.5 sm:grid-cols-24 lg:grid-cols-32"
+        className="grid grid-cols-12 gap-1.5 xs:grid-cols-16 sm:grid-cols-24 lg:grid-cols-32"
         onMouseLeave={() => setLit(1)}
       >
         {cells.map((i) => {

@@ -111,7 +111,7 @@ export default function Playground() {
                 <button
                   key={c.name}
                   onClick={() => setCityName(c.name)}
-                  className="rounded border px-2.5 py-1.5 font-mono text-[11px] transition-colors"
+                  className="min-h-9 rounded border px-2.5 py-2 font-mono text-[11px] transition-colors"
                   style={{
                     borderColor: c.name === cityName ? "var(--accent)" : "var(--line)",
                     backgroundColor: c.name === cityName ? "var(--accent)" : "transparent",
@@ -198,13 +198,18 @@ export default function Playground() {
 
       {/* ── Transport + trace ─────────────────────────────────── */}
       <section className="instrument mt-4 overflow-hidden">
-        <div className="flex flex-wrap items-center gap-x-6 gap-y-4 border-b border-line px-4 py-3">
+        <div className="flex flex-wrap items-center gap-x-4 gap-y-3 border-b border-line px-4 py-3">
           <div className="flex flex-wrap items-center gap-2">
             {sim.phase === "running" ? (
               <button onClick={sim.pause} className="inline-flex btn btn-ghost">Pause</button>
             ) : (
-              <button onClick={sim.run} className="inline-flex btn btn-primary">Run</button>
+              <button onClick={sim.run} className="inline-flex btn btn-primary">
+                Run from origin
+              </button>
             )}
+            <button onClick={sim.runFromP} className="inline-flex btn btn-ghost">
+              Run from P
+            </button>
             <button
               onClick={() => sim.runFrom(Math.max(0, sim.sAt - 4))}
               className="inline-flex btn btn-ghost"
@@ -221,8 +226,8 @@ export default function Playground() {
           <div className="flex items-center gap-4">
             {sim.warning > 60 && sim.phase !== "running" && (
               <span className="font-mono text-[11px] text-ink-3">
-                {formatDuration(sim.sAt / sim.rate)} of real time to impact at{" "}
-                {sim.rate}× — skip if that is too long
+                full run {formatDuration(sim.sAt / sim.rate)} of real time at{" "}
+                {sim.rate}× — run from P if that is too long
               </span>
             )}
             <span className="tnum font-mono text-[12px] text-ink-2">
@@ -231,9 +236,9 @@ export default function Playground() {
           </div>
         </div>
 
-        <div className="grid gap-px bg-line lg:grid-cols-2">
-          <div className="bg-surface">
-            <div className="flex items-center justify-between border-b border-line px-4 py-2.5">
+        <div className="grid min-w-0 gap-px bg-line lg:grid-cols-2">
+          <div className="min-w-0 bg-surface">
+            <div className="flex flex-wrap items-center justify-between gap-2 border-b border-line px-4 py-2.5">
               <h3 className="label">{city.name} · vertical trace</h3>
               <span className="font-mono text-[10px] uppercase tracking-[0.08em] text-ink-3">
                 {sim.distanceKm.toFixed(0)} km away
@@ -249,8 +254,8 @@ export default function Playground() {
             />
           </div>
 
-          <div className="bg-surface">
-            <div className="flex items-center justify-between border-b border-line px-4 py-2.5">
+          <div className="min-w-0 bg-surface">
+            <div className="flex flex-wrap items-center justify-between gap-2 border-b border-line px-4 py-2.5">
               <h3 className="label">Response ladder</h3>
               <span className="font-mono text-[10px] uppercase tracking-[0.08em] text-ink-3">
                 {sim.ladder.filter((l) => l.done).length} / {sim.ladder.length}
@@ -334,14 +339,22 @@ function Timeline({ sim }: { sim: ReturnType<typeof useQuakeSim> }) {
         />
       </div>
 
-      <div className="relative mt-2 h-4 font-mono text-[10px] tracking-[0.06em]">
-        <span className="absolute -translate-x-1/2 whitespace-nowrap" style={{ left: `${p}%`, color: "var(--pw)" }}>
-          P {sim.pAt.toFixed(1)}s
+      {/* Three positioned labels cannot fit across a phone, so below sm the
+          times collapse into one readable line. */}
+      <div className="mt-2 font-mono text-[10px] tracking-[0.06em] sm:relative sm:h-4">
+        <p className="sm:hidden">
+          <span style={{ color: "var(--pw)" }}>P {sim.pAt.toFixed(1)}s</span>
+          <span className="text-ink-3"> → </span>
+          <span className="text-ink-3">{sim.warning.toFixed(1)}s of warning → </span>
+          <span style={{ color: "var(--sw)" }}>S {sim.sAt.toFixed(1)}s</span>
+        </p>
+        <span className="absolute hidden -translate-x-1/2 whitespace-nowrap sm:inline" style={{ left: `${p}%`, color: "var(--pw)" }}>
+          {sim.pAt.toFixed(1)}s
         </span>
-        <span className="absolute whitespace-nowrap" style={{ left: `calc(${w}% + 6px)`, color: "var(--sw)" }}>
+        <span className="absolute hidden whitespace-nowrap sm:inline" style={{ left: `calc(${w}% + 6px)`, color: "var(--sw)" }}>
           S {sim.sAt.toFixed(1)}s
         </span>
-        <span className="absolute -translate-x-1/2 whitespace-nowrap text-ink-3" style={{ left: `${(p + w) / 2}%` }}>
+        <span className="absolute hidden -translate-x-1/2 whitespace-nowrap text-ink-3 sm:inline" style={{ left: `${(p + w) / 2}%` }}>
           {sim.warning.toFixed(1)}s of warning
         </span>
       </div>

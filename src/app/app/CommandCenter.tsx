@@ -114,7 +114,7 @@ export default function CommandCenter() {
 
           <div className="ml-auto">
             {sim.phase === "idle" ? (
-              <button onClick={trigger} className="btn" style={{ background: "var(--sw)", color: "#fff" }}>
+              <button onClick={trigger} className="inline-flex btn" style={{ background: "var(--sw)", color: "#fff" }}>
                 Trigger event
               </button>
             ) : (
@@ -265,7 +265,8 @@ export default function CommandCenter() {
               first six to feel S
             </span>
           </div>
-          <table className="w-full text-left text-[13px]">
+          <div className="overflow-x-auto">
+          <table className="w-full min-w-[420px] text-left text-[13px]">
             <thead>
               <tr className="border-b border-line font-mono text-[10px] uppercase tracking-[0.08em] text-ink-3">
                 <th className="px-4 py-2 font-normal">Station</th>
@@ -297,6 +298,7 @@ export default function CommandCenter() {
               ))}
             </tbody>
           </table>
+          </div>
         </section>
 
         <section className="instrument min-w-0 overflow-hidden">
@@ -356,7 +358,7 @@ function ScenarioPicker({ value, onChange, disabled }: { value: string; onChange
             key={s.id}
             disabled={disabled}
             onClick={() => onChange(s.id)}
-            className="rounded px-2.5 py-1 font-mono text-[10px] uppercase tracking-[0.08em] transition-colors disabled:opacity-40"
+            className="min-h-9 rounded px-2.5 py-2 font-mono text-[10px] uppercase tracking-[0.06em] transition-colors disabled:opacity-40 sm:tracking-[0.08em]"
             style={{
               backgroundColor: value === s.id ? "var(--accent)" : "transparent",
               color: value === s.id ? "var(--on-accent)" : "var(--ink-3)",

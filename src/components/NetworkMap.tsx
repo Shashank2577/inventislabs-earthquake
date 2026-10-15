@@ -473,8 +473,9 @@ export function NetworkMap({
             <animate attributeName="opacity" values="0.85;0" dur="2.2s" repeatCount="indefinite" />
           </circle>
           <text
-            x={px(picked.lon) + 20}
+            x={picked.lon > 76 ? px(picked.lon) - 20 : px(picked.lon) + 20}
             y={py(picked.lat) - 14}
+            textAnchor={picked.lon > 76 ? "end" : "start"}
             fontSize="15"
             fill={CRIMSON}
             fontFamily="var(--font-mono)"
@@ -508,6 +509,7 @@ export function NetworkMap({
             x={(px(picked.lon) + px(link.to.lon)) / 2}
             y={(py(picked.lat) + py(link.to.lat)) / 2 - 8}
             textAnchor="middle"
+            className="hidden sm:inline"
             fontSize="15"
             fill={CRIMSON}
             fontFamily="var(--font-mono)"
@@ -550,9 +552,12 @@ export function NetworkMap({
                 stroke="var(--bg)"
                 strokeWidth="1.5"
               />
+              {/* Fourteen labels at phone width collide into mush. Keep the
+                  station and the epicentre; the rest come back at sm. */}
               <text
                 x={cx + 10}
                 y={cy + 4.5 + (CITY_LABEL_OFFSET[c.name] ?? 0)}
+                className={c.active ? undefined : "hidden sm:inline"}
                 fontSize="16"
                 fill={c.active ? "var(--ink)" : "var(--ink-2)"}
                 fontFamily="var(--font-mono)"
