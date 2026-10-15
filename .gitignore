@@ -38,3 +38,5 @@ yarn-error.log*
 .vscode/*
 !.vscode/extensions.json
 .idea
+# Next.js dev-server build cache (separate distDir from production)
+.next-dev/
