@@ -25,7 +25,7 @@ const TEAL = "var(--accent)";
 const RULE = "var(--line-strong)";
 
 export const metadata: Metadata = {
-  title: "From the fault to the floor · Inventis Labs",
+  title: "From the fault to the floor",
   description:
     "An earthquake gives you seconds. This is where they come from, what they cost, and why a network beats a sensor.",
 };

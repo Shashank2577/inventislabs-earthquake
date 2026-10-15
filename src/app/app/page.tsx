@@ -3,7 +3,7 @@ import { SiteHeader } from "@/components/chrome";
 import CommandCenter from "./CommandCenter";
 
 export const metadata: Metadata = {
-  title: "Command Center · Inventis Labs",
+  title: "Command Center",
   description:
     "Live seismic network view: node health, station traces, arrival sequence and the automated response ladder.",
 };
