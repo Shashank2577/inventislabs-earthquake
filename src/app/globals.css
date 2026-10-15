@@ -1,0 +1,453 @@
+@import "tailwindcss";
+
+/* 400px — the point where the header wordmark can reappear. */
+@theme {
+  --breakpoint-xs: 25rem;
+}
+
+/* ================================================================
+   Tokens
+   Semantic names only. Light is the default; dark overrides the
+   same names, so every component is theme-agnostic by construction.
+   ================================================================ */
+
+:root {
+  /* Warm paper — light */
+  --bg: #eceae3;
+  --bg-raised: #f4f2ec;
+  --surface: #faf8f4;
+  --surface-2: #f1eee7;
+
+  --ink: #191713;
+  --ink-2: #565149;
+  --ink-3: #8a8478;
+
+  --line: #dcd7cb;
+  --line-strong: #c4bdad;
+
+  --accent: #1c5b62;
+  --accent-hover: #164a50;
+  --on-accent: #f6f4ee;
+
+  /* Wave physics colours — reserved for data, never chrome */
+  --pw: #a86a08; /* primary wave  */
+  --sw: #a51f2f; /* secondary wave */
+  --grid: #d3ceC2;
+  --grid-soft: #e4e0d6;
+
+  /* Landmass — needs to sit clearly above the page, not dissolve into it */
+  --land-hi: #e4e0d5;
+  --land-lo: #d9d4c6;
+  --land-line: #a9a18e;
+
+  --shadow: 60 48 30;
+  --shadow-a: 0.08;
+  --grain: 0.055;
+  --wash: 0.05;
+
+  color-scheme: light;
+}
+
+[data-theme="dark"] {
+  /* Warm graphite — dark */
+  --bg: #131210;
+  --bg-raised: #1a1917;
+  --surface: #201e1b;
+  --surface-2: #27241f;
+
+  --ink: #f0ede5;
+  --ink-2: #a9a396;
+  --ink-3: #787266;
+
+  --line: #302d28;
+  --line-strong: #454039;
+
+  --accent: #7ecbc4;
+  --accent-hover: #97dad4;
+  --on-accent: #0e1a1a;
+
+  --pw: #f0b45a;
+  --sw: #ff6172;
+  --grid: #3a362f;
+  --grid-soft: #272420;
+
+  --land-hi: #2b2823;
+  --land-lo: #1e1c19;
+  --land-line: #5d574c;
+
+  --shadow: 0 0 0;
+  --shadow-a: 0.55;
+  --grain: 0.05;
+  --wash: 0.09;
+
+  color-scheme: dark;
+}
+
+@theme inline {
+  --color-bg: var(--bg);
+  --color-bg-raised: var(--bg-raised);
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
+
+  --color-ink: var(--ink);
+  --color-ink-2: var(--ink-2);
+  --color-ink-3: var(--ink-3);
+
+  --color-line: var(--line);
+  --color-line-strong: var(--line-strong);
+
+  --color-accent: var(--accent);
+  --color-accent-hover: var(--accent-hover);
+  --color-on-accent: var(--on-accent);
+
+  --color-pwave: var(--pw);
+  --color-swave: var(--sw);
+
+  --font-sans: var(--f-sans), ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--f-display), ui-serif, Georgia, serif;
+  --font-mono: var(--f-mono), ui-monospace, SFMono-Regular, monospace;
+
+  --text-display: clamp(2.6rem, 7vw, 6.5rem);
+  --text-chapter: clamp(1.95rem, 4.4vw, 3.75rem);
+}
+
+/* ================================================================
+   Base
+   ================================================================ */
+
+@layer base {
+  * {
+    border-color: var(--line);
+  }
+
+  html {
+    scroll-behavior: smooth;
+    -webkit-text-size-adjust: 100%;
+  }
+
+  body {
+    background-color: var(--bg);
+    color: var(--ink);
+    font-family: var(--font-sans);
+    font-feature-settings: "kern" 1;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+    overflow-x: hidden;
+    transition:
+      background-color 320ms ease,
+      color 320ms ease;
+  }
+
+  /* Film grain. Breaks the flatness of large colour fields so the
+     surfaces read as printed stock rather than as #hex fills. */
+  body::after {
+    content: "";
+    position: fixed;
+    inset: 0;
+    z-index: 100;
+    pointer-events: none;
+    opacity: var(--grain);
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+
+  ::selection {
+    background-color: var(--accent);
+    color: var(--on-accent);
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 3px;
+    border-radius: 2px;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    html {
+      scroll-behavior: auto;
+    }
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.001ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.001ms !important;
+    }
+  }
+}
+
+/* ================================================================
+   Components
+   ================================================================ */
+
+/* Technical caption. Small, quiet, never shouting. */
+.label {
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+}
+
+/* Section eyebrow with a leading rule — replaces the bare mono label
+   that was doing too much work on its own. */
+.eyebrow {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+}
+
+.eyebrow::before {
+  content: "";
+  width: 1.75rem;
+  height: 1px;
+  background: var(--line-strong);
+  flex: none;
+}
+
+/* Editorial display — high-contrast serif, tight, with an italic option
+   for the emphasised fragment inside a heading. */
+.display {
+  font-family: var(--font-display);
+  font-size: var(--text-display);
+  line-height: 0.92;
+  letter-spacing: -0.025em;
+  font-weight: 400;
+  text-wrap: balance;
+}
+
+.chapter {
+  font-family: var(--font-display);
+  font-size: var(--text-chapter);
+  line-height: 1;
+  letter-spacing: -0.02em;
+  font-weight: 400;
+  text-wrap: balance;
+}
+
+.display em,
+.chapter em {
+  font-style: italic;
+  color: var(--accent);
+}
+
+/* Data never sits in a proportional face. */
+.tnum {
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum" 1;
+}
+
+/* Surfaces are separated by tone and a single hairline, never by a
+   box-and-shadow on every element. */
+.surface {
+  background-color: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 4px;
+}
+
+.raise {
+  box-shadow:
+    0 1px 2px rgb(var(--shadow) / calc(var(--shadow-a) * 0.6)),
+    0 8px 24px -12px rgb(var(--shadow) / var(--shadow-a));
+}
+
+/* Buttons: real hover + press, never a flat fill with no feedback. */
+/* NB: no `display` here on purpose. A component-class `display` outranks the
+   `hidden` / `md:inline-flex` utilities, which silently breaks responsive
+   visibility. Callers set `inline-flex` as a utility. */
+.btn {
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  border-radius: 3px;
+  padding: 0.7rem 1.25rem;
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  font-weight: 500;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  transition:
+    background-color 200ms ease,
+    color 200ms ease,
+    border-color 200ms ease,
+    transform 120ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.btn:active {
+  transform: translateY(1px) scale(0.995);
+}
+
+.btn-primary {
+  background-color: var(--accent);
+  color: var(--on-accent);
+}
+
+.btn-primary:hover {
+  background-color: var(--accent-hover);
+}
+
+.btn-ghost {
+  border: 1px solid var(--line-strong);
+  color: var(--ink-2);
+}
+
+.btn-ghost:hover {
+  border-color: var(--ink-3);
+  color: var(--ink);
+}
+
+/* Instrument frame — for the dense dashboard surfaces only. */
+.instrument {
+  background-color: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 4px;
+}
+
+.grid-wash {
+  background-image:
+    linear-gradient(to right, var(--grid-soft) 1px, transparent 1px),
+    linear-gradient(to bottom, var(--grid-soft) 1px, transparent 1px);
+  background-size: 72px 72px;
+  opacity: var(--wash);
+}
+
+.skip-link {
+  position: fixed;
+  top: 0.5rem;
+  left: 0.5rem;
+  z-index: 200;
+  transform: translateY(-200%);
+  border-radius: 3px;
+  background: var(--accent);
+  color: var(--on-accent);
+  padding: 0.6rem 1rem;
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  transition: transform 180ms ease;
+}
+
+.skip-link:focus-visible {
+  transform: none;
+}
+
+/* ================================================================
+   Scroll reveal
+   ================================================================ */
+
+[data-reveal] {
+  opacity: 0;
+  transform: translateY(20px);
+  transition:
+    opacity 760ms cubic-bezier(0.16, 1, 0.3, 1),
+    transform 760ms cubic-bezier(0.16, 1, 0.3, 1);
+  transition-delay: var(--reveal-delay, 0ms);
+}
+
+[data-reveal="in"] {
+  opacity: 1;
+  transform: none;
+}
+
+@keyframes blink {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.3;
+  }
+}
+
+@keyframes sweep-up {
+  0% {
+    transform: translateY(100%);
+  }
+  100% {
+    transform: translateY(-100%);
+  }
+}
+/* Timeline scrubber — the thumb is the only thing that needs a custom look,
+   the track is painted behind it in HTML so it can carry P/S markers. */
+input[type="range"].scrub {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  background: transparent;
+  cursor: grab;
+}
+
+input[type="range"].scrub:active {
+  cursor: grabbing;
+}
+
+input[type="range"].scrub::-webkit-slider-runnable-track {
+  height: 4px;
+  background: transparent;
+}
+
+input[type="range"].scrub::-moz-range-track {
+  height: 4px;
+  background: transparent;
+}
+
+input[type="range"].scrub::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 16px;
+  height: 16px;
+  margin-top: -6px;
+  border-radius: 50%;
+  background: var(--accent);
+  border: 2px solid var(--bg);
+  box-shadow: 0 1px 3px rgb(0 0 0 / 0.25);
+}
+
+input[type="range"].scrub::-moz-range-thumb {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: var(--accent);
+  border: 2px solid var(--bg);
+  box-shadow: 0 1px 3px rgb(0 0 0 / 0.25);
+}
+
+input[type="range"].scrub:focus-visible {
+  outline-offset: 6px;
+}
+
+/* Plain vertical slider for the magnitude / depth levers. */
+input[type="range"].lever {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 4px;
+  border-radius: 2px;
+  background: var(--surface-2);
+  cursor: pointer;
+}
+
+input[type="range"].lever::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: var(--accent);
+  border: 2px solid var(--bg);
+}
+
+input[type="range"].lever::-moz-range-thumb {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: var(--accent);
+  border: 2px solid var(--bg);
+}
