@@ -367,10 +367,14 @@ export function NetworkMap({
           width="1000"
           height="1000"
           fill="transparent"
+          /* `visiblePainted` will not deliver clicks on a fully transparent
+             fill in every engine — `all` makes the hit area unconditional. */
+          pointerEvents="all"
           style={{ cursor: "crosshair" }}
           onClick={(e) => {
             if (!onPick) return;
-            const box = (e.target as SVGRectElement).ownerSVGElement!.getBoundingClientRect();
+            const svgEl = (e.currentTarget as SVGRectElement).ownerSVGElement!;
+            const box = svgEl.getBoundingClientRect();
             const p = unproject(
               ((e.clientX - box.left) / box.width) * 1000,
               ((e.clientY - box.top) / box.height) * 1000,
