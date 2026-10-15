@@ -37,8 +37,13 @@ jobs:
           NEXT_PUBLIC_BASE_PATH: /inventislabs-earthquake
           NEXT_PUBLIC_SITE_URL: https://shashank2577.github.io/inventislabs-earthquake
 
+      # enablement: true is required on a repo that has never had Pages on.
+      # Without it the action defaults to false and fails with "Get Pages site
+      # failed" instead of creating the site.
       - uses: actions/configure-pages@v5
         id: pages
+        with:
+          enablement: true
 
       - uses: actions/upload-pages-artifact@v3
         with:
