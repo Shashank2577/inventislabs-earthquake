@@ -29,6 +29,12 @@ and the playground all call the same functions in `src/lib/wave.ts`.
 Next.js 15 (App Router) · React 19 · TypeScript · Tailwind v4 · zero UI
 dependencies. Static export, deployed to GitHub Pages.
 
+Fonts are **self-hosted** (`src/app/fonts`, latin subset, 91 kB) and loaded
+through `next/font/local`. They were on `next/font/google`, which fetches from
+Google at build time — that made the whole deploy fail on a transient hiccup
+("Cannot read properties of null" in `next/font`) and left a third-party
+dependency in a site whose whole point is measuring its own page weight.
+
 ## Running it
 
 ```bash

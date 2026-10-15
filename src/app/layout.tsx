@@ -1,29 +1,38 @@
 import type { Metadata, Viewport } from "next";
-import { IBM_Plex_Mono, IBM_Plex_Sans, Instrument_Serif } from "next/font/google";
+import localFont from "next/font/local";
 import "./globals.css";
 
 /* A high-contrast editorial serif for display, a technical sans for reading,
-   a true mono for every number on the page. */
-const display = Instrument_Serif({
-  subsets: ["latin"],
-  weight: "400",
-  style: ["normal", "italic"],
+   a true mono for every number on the page.
+   Self-hosted rather than fetched from Google at build time — `next/font/google`
+   makes the whole deploy depend on a third party being up, and it took a CI
+   run down with "Cannot read properties of null (reading '1')" in next/font.
+   Latin subset only; the site is English-only. 91 kB total. */
+const display = localFont({
+  src: [
+    { path: "./fonts/InstrumentSerif-400.woff2", weight: "400", style: "normal" },
+    { path: "./fonts/InstrumentSerif-400i.woff2", weight: "400", style: "italic" },
+  ],
   variable: "--f-display",
   display: "swap",
+  fallback: ["ui-serif", "Georgia", "serif"],
 });
 
-const sans = IBM_Plex_Sans({
-  subsets: ["latin"],
-  weight: ["400", "500", "600"],
+const sans = localFont({
+  src: [{ path: "./fonts/IBMPlexSans-var.woff2", weight: "100 700", style: "normal" }],
   variable: "--f-sans",
   display: "swap",
+  fallback: ["ui-sans-serif", "system-ui", "sans-serif"],
 });
 
-const mono = IBM_Plex_Mono({
-  subsets: ["latin"],
-  weight: ["400", "500"],
+const mono = localFont({
+  src: [
+    { path: "./fonts/IBMPlexMono-400.woff2", weight: "400", style: "normal" },
+    { path: "./fonts/IBMPlexMono-500.woff2", weight: "500", style: "normal" },
+  ],
   variable: "--f-mono",
   display: "swap",
+  fallback: ["ui-monospace", "SFMono-Regular", "monospace"],
 });
 
 export const metadata: Metadata = {
