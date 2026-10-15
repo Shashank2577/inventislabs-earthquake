@@ -200,3 +200,57 @@ export function useQuakeSim(
 }
 
 export type QuakeSim = ReturnType<typeof useQuakeSim>;
+
+/**
+ * Shakes the document for one beat when the S-wave lands.
+ *
+ * Amplitude comes from the predicted ground acceleration at the station, so a
+ * distant M7 is a smaller rattle on your screen than a nearby M5 — which is
+ * the point. Fires once per run and re-arms on reset.
+ */
+export function useImpactShake(sim: {
+  elapsed: number;
+  sAt: number;
+  pga: number;
+  phase: Phase;
+}) {
+  const firedRef = useRef(false);
+  const timerRef = useRef<number | null>(null);
+
+  useEffect(() => {
+    if (sim.phase === "idle" || sim.phase === "paused") firedRef.current = false;
+    if (firedRef.current) return;
+    if (sim.phase !== "running" || sim.elapsed < sim.sAt) return;
+
+    firedRef.current = true;
+
+    // 0.35 g is already severe shaking; below that the screen barely moves.
+    const scale = Math.max(0.25, Math.min(1.35, sim.pga / 0.35));
+    const body = document.body;
+    body.style.setProperty("--quake-scale", scale.toFixed(3));
+
+    // Restart cleanly even if a previous shake is somehow still attached.
+    body.classList.remove("is-quaking");
+    void body.offsetWidth;
+    body.classList.add("is-quaking");
+
+    if (timerRef.current) window.clearTimeout(timerRef.current);
+    timerRef.current = window.setTimeout(() => {
+      body.classList.remove("is-quaking");
+      body.style.removeProperty("--quake-scale");
+    }, 950);
+
+    /* Deliberately no cleanup here. This effect re-runs on every elapsed
+       tick, and returning a cleanup would strip the class ~30 ms into the
+       animation. Teardown is handled by the unmount effect below. */
+  }, [sim.elapsed, sim.sAt, sim.pga, sim.phase]);
+
+  useEffect(
+    () => () => {
+      if (timerRef.current) window.clearTimeout(timerRef.current);
+      document.body.classList.remove("is-quaking");
+      document.body.style.removeProperty("--quake-scale");
+    },
+    [],
+  );
+}

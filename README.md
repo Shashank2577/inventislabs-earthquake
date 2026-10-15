@@ -51,6 +51,9 @@ Two things that have bitten this codebase:
 - **`.btn` deliberately does not set `display`.** A `display` in a component
   class outranks the `hidden` / `md:inline-flex` utilities and silently breaks
   responsive visibility. Callers pass `inline-flex`.
+- **`useImpactShake` returns no cleanup.** It re-runs on every `elapsed` tick;
+  a cleanup would strip the class mid-animation and the shake would die after
+  ~30 ms. Teardown lives in a separate unmount-only effect.
 - **The sim clock derives from a fixed base, never from a running total.**
   Adding `(now - start)` on every animation frame compounds quadratically and
   finishes the event in a fraction of a second. See the comment in

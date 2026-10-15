@@ -6,7 +6,7 @@ import { Seismogram } from "@/components/Seismogram";
 import { Reveal } from "@/components/primitives";
 import { ASSETS, SENSOR_NODES, VP, VS } from "@/lib/data";
 import { haversineKm } from "@/lib/wave";
-import { useQuakeSim } from "@/lib/sim";
+import { useImpactShake, useQuakeSim } from "@/lib/sim";
 
 const HQ = { lat: 29.85, lon: 77.89, name: "Roorkee Core" };
 
@@ -47,6 +47,8 @@ export default function CommandCenter() {
     { lat: origin.lat, lon: origin.lon, magnitude: scenario.magnitude, depthKm: scenario.depthKm },
     HQ,
   );
+
+  useImpactShake(sim);
 
   const trigger = useCallback(() => {
     sim.run();

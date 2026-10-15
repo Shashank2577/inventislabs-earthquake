@@ -4,7 +4,7 @@ import { useMemo, useState } from "react";
 import { NetworkMap } from "@/components/NetworkMap";
 import { Seismogram } from "@/components/Seismogram";
 import { CITIES, VP, VS, ZONE_NOTE, type City } from "@/lib/data";
-import { useQuakeSim } from "@/lib/sim";
+import { useImpactShake, useQuakeSim } from "@/lib/sim";
 
 /* A Uttarakhand foothill source, and a city close enough to it that the
    default run finishes inside half a minute at 1x. */
@@ -37,6 +37,8 @@ export default function Playground() {
       })),
     [cityName],
   );
+
+  useImpactShake(sim);
 
   const zoneOf = city as City;
 
